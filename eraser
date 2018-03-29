@@ -2,35 +2,36 @@
 
 
 device=$(zenity --list --width=80 --height=300 --radiolist \
-	--title="Segurança da Informação" \
-	--text="Escolha um dos discos \npara executar a ação de apagar \ncom segurança todas as informações (shred)." \
-	--column="Opção" --column "Disco" \
-	$(while read linha; do disco=( $linha ); [ ${disco[0]} != "sda" ] && echo "1" "/dev/${disco[0]}"; done < <(grep disk <(lsblk)))
+  --title="Segurança da Informação" \
+  --text="Escolha um dos discos \npara executar a ação de apagar \ncom segurança todas as informações (shred)." \
+  --column="Opção" --column "Disco" \
+  $(while read linha; do disco=( $linha ); [ ${disco[0]} != "sda" ] && echo "1" "/dev/${disco[0]}"; done < <(grep disk <(lsblk)))
 )
 
 [ -z "$device" ] && exit 1
 
 opcao=shred
 case $opcao in
-	dd)
-		echo "Executando modo dd"
-		dd if=/dev/urandom of=$device bs=4096 
-		dd if=/dev/zero of=/dev/null& pid=$!
-        kill -USR1 $pid; sleep 1; kill $pid
-		;;
-	shred)
-		echo "Executando modo shred"
-		cmd="sudo shred --verbose --random-source=/dev/urandom -zn1 $device"
-		;;
-	pv)
-		echo "Executando modo pv"
-		pv --timer --rate /dev/urandom > $device
-		;;
-	wipe)
-		echo "Executando modo wipe"
-		wipe -Sr -i -f -P2 $device
-		;;
-	*);;
+  dd)
+    echo "Executando modo dd"
+    dd if=/dev/urandom of=$device bs=4096 
+    dd if=/dev/zero of=/dev/null& pid=$!
+    kill -USR1 $pid; sleep 1; kill $pid
+    ;;
+  shred)
+    echo "Executando modo shred"
+    cmd="sudo shred --verbose --random-source=/dev/urandom -zn1 $device"
+    ;;
+  pv)
+    echo "Executando modo pv"
+    pv --timer --rate /dev/urandom > $device
+    ;;
+  wipe)
+    echo "Executando modo wipe"
+    wipe -Sr -i -f -P2 $device
+    ;;
+  *);;
 esac
 
 gnome-terminal --geometry=60X40 -t Eraser -x bash -c "time $cmd; read -p 'Tecle enter para finalizar o processo...' "
+
